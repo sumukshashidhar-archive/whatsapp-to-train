@@ -3,24 +3,25 @@ from unsloth import FastLanguageModel
 from datasets import Dataset
 import os
 
+print("Torch version:", torch.__version__)
 # get current working directory, full path
 current_dir = os.getcwd()
-max_seq_len = 2048
+max_seq_length = 2048
 load_in_4bit = True
 model_name = "mistralai/Mistral-7B-Instruct-v0.2"
 
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name=model_name,
-    max_seq_len=max_seq_len,
+    max_seq_length=max_seq_length,
     load_in_4bit=load_in_4bit
 )
 
 model = FastLanguageModel.get_peft_model(
     model,
-    r = 16, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
+    r = 32, # Choose any number > 0 ! Suggested 8, 16, 32, 64, 128
     target_modules = ["q_proj", "k_proj", "v_proj", "o_proj",
                       "gate_proj", "up_proj", "down_proj",],
-    lora_alpha = 16,
+    lora_alpha = 32,
     lora_dropout = 0, # Supports any, but = 0 is optimized
     bias = "none",    # Supports any, but = "none" is optimized
     use_gradient_checkpointing = True,
@@ -39,15 +40,16 @@ trainer = SFTTrainer(
     tokenizer = tokenizer,
     train_dataset = dataset,
     dataset_text_field = "text",
-    max_seq_length = max_seq_len,
+    max_seq_length = max_seq_length,
     dataset_num_proc = 2,
-    packing = False, # Can make training 5x faster for short sequences.
+    packing = True, # Can make training 5x faster for short sequences.
     args = TrainingArguments(
-        per_device_train_batch_size = 2,
+        per_device_train_batch_size = 12,
         gradient_accumulation_steps = 4,
         warmup_steps = 5,
-        max_steps = 60,
+        num_train_epochs = 2,
         learning_rate = 2e-4,
+        save_steps = 500,
         fp16 = not torch.cuda.is_bf16_supported(),
         bf16 = torch.cuda.is_bf16_supported(),
         logging_steps = 1,

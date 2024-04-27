@@ -34,7 +34,7 @@ RUN pip install --upgrade jupyterlab jupyterlab-code-formatter black isort jupyt
 
 # cuda focused
 RUN pip install torch --index-url https://download.pytorch.org/whl/cu121
-RUN pip install transformers bitsandbytes datasets sentencepiece scikit-learn peft vllm
+RUN pip install transformers bitsandbytes datasets sentencepiece scikit-learn peft vllm trl tiktoken
 RUN pip install --no-deps packaging ninja einops flash-attn xformers trl accelerate bitsandbytes
 RUN pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
 
